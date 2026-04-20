@@ -1,173 +1,111 @@
-# Code For All\_ | AI for Programmers (Python)
+# RAG - v5 Build
 
-## Course Overview
+**All features from v4 Build:**
+- Refactored code structure
+- Conversation Memory
+- Parent Document Retriever
 
-- Five-weeks course.
-- Each week is thought for three 2-hour sessions, leaving a flexible hour on the last session of each week.
+**NEW IN v5 Build:**
+- **Multi-Query Retrieval**: Generate query variations for better coverage
+- **FlashRank Reranking**: Cross-encoder reranking for better relevance
 
-## Course Structure
+## Install Dependencies
+%pip install "langchain==0.3.27" -qqq
+%pip install "langchain-community==0.3.31" -qqq
+%pip install "langchain-openai==0.3.35" -qqq
+%pip install "langchain-chroma==0.2.6" -qqq
+%pip install pypdf -qqq
+%pip install gradio -qqq
+#--------------------------------------------------------------------------------
+# NEW IN v5 Build: Install FlashRank for reranking
+#--------------------------------------------------------------------------------
+%pip install flashrank -qqq
 
-### Week 1: AI Fundamentals & Large Language Models
+# RAG - v5 Build
 
-AI history, machine learning paradigms, neural networks, transformer architecture, LLM internals (tokenization, embeddings, generation), OpenAI API.
+**All features from v4 Build:**
+- Refactored code structure
+- Conversation Memory
+- Parent Document Retriever
 
-### Week 2: Prompt Engineering, LangChain & Vector Databases
+**NEW IN v5 Build:**
+- **Multi-Query Retrieval**: Generate query variations for better coverage
+- **FlashRank Reranking**: Cross-encoder reranking for better relevance
 
-Prompt anatomy and techniques, LangChain framework (chains, components), vector databases, embeddings, similarity search, complete RAG implementation.
+## Install Dependencies
+%pip install "langchain==0.3.27" -qqq
+%pip install "langchain-community==0.3.31" -qqq
+%pip install "langchain-openai==0.3.35" -qqq
+%pip install "langchain-chroma==0.2.6" -qqq
+%pip install pypdf -qqq
+%pip install gradio -qqq
+#--------------------------------------------------------------------------------
+# NEW IN v5 Build: Install FlashRank for reranking
+#--------------------------------------------------------------------------------
+%pip install flashrank -qqq
 
-### Week 3: RAG - Iterative Build
+## Configuration
 
-Build complete RAG system across three iterations: v1 (foundation, ingestion, retrieval), v2 (LLM integration, UI), v3 (multi-document, preprocessing, metadata filtering). Each day builds on previous day's solution.
+The project uses a `load_secrets` function to securely load API keys and configuration values. It first attempts to load from Google Colab's secret storage, and falls back to loading from a local `.env` file for development. Required secrets include Chroma database credentials and OpenAI API key.
 
-### Week 4: Advanced RAG Strategies & Evaluation
+## Global Variables
 
-Code refactoring, conversation memory, parent-child retrieval, multi-query expansion, cross-encoder reranking, RAGAS evaluation framework (Faithfulness, Answer Relevancy, Context Precision, Context Recall).
+The system initializes several key components:
+- **Version Management**: Tracks the current build version (v5)
+- **Embeddings Model**: Uses OpenAI's text-embedding-3-small for document vectorization
+- **LLM**: Employs GPT-4o-mini for main inference and GPT-3.5-turbo for classification tasks
+- **Vector Database**: Connects to Chroma Cloud with the specified collection for document storage
+- **Base Retriever**: Configured to retrieve top 5 similar documents by default
 
-### Week 5: AI Agents & Fine-tuning
+## Ingestion Pipeline
 
-AI agent fundamentals, LangChain tools and ReAct pattern, building custom agents, OpenAI fine-tuning API, preparing training data, when to use fine-tuning vs RAG vs prompt engineering.
+The ingestion process handles PDF document processing with the following steps:
 
-## Week-Specific Guides
+1. **Document Loading**: Loads PDF files from URLs or local paths using PyPDFLoader
+2. **Topic Detection**: Automatically identifies the document's primary topic (e.g., 'bitcoin', 'ethereum') using LLM analysis
+3. **Text Preprocessing**: Cleans raw PDF text by removing extra whitespace, standalone page numbers, and formatting artifacts
+4. **Document Chunking**: Splits documents into manageable chunks (1000 characters with 200 character overlap) for better retrieval
+5. **Metadata Enrichment**: Adds topic information and other metadata to each document chunk
+6. **Vector Storage**: Stores processed chunks in the Chroma vector database for later retrieval
 
-- [Week 1 Guide](week_1/README.md) - Sessions, notebooks, objectives
-- [Week 2 Guide](week_2/README.md) - Sessions, notebooks, objectives
-- [Week 3 Guide](week_3/README.md) - Sessions, notebooks, objectives, development flow
-- [Week 4 Guide](week_4/README.md) - Sessions, notebooks, objectives, version progression
-- [Week 5 Guide](week_5/README.md) - Sessions, notebooks, objectives, agents and fine-tuning
+The system can ingest multiple documents, such as the Bitcoin whitepaper and Ethereum documentation.
 
-## Using These Notebooks
+## Inference Process
 
-**Private Repository**: Direct "Open in Colab" links won't work.
+The inference pipeline implements advanced retrieval-augmented generation with conversation memory:
 
-**Process**:
+### RAG Chain
+Creates a conversational AI assistant specialized in cryptocurrency whitepapers. The chain:
+- Maintains conversation context across turns
+- Provides clear, concise answers (2-3 paragraphs max)
+- Uses only provided document context
+- Handles follow-up questions by referencing previous context
 
-1. Download `.ipynb` file from GitHub (click file → Raw → Save as)
-2. Upload to [Google Colab](https://colab.research.google.com/) (File → Upload notebook)
+### Chat History Formatting
+Processes conversation history to maintain context while managing token limits:
+- Limits to recent 5 conversation turns
+- Formats messages for LLM consumption
+- Balances relevance with cost/performance constraints
 
-## Local Development Setup
+### Multi-Query Retrieval + Reranking (NEW IN v5)
+Implements state-of-the-art retrieval techniques:
 
-To run notebooks locally on your machine (instead of Colab), follow these steps:
+**Multi-Query Approach:**
+- Generates multiple query variations using LLM
+- Searches vector database with each variation
+- Combines and deduplicates results for broader coverage
 
-### 1. Create Virtual Environment
+**FlashRank Reranking:**
+- Uses cross-encoder model to score document relevance
+- Reranks retrieved documents by semantic similarity to original query
+- Returns top 4 most relevant documents
 
-```bash
-python3 -m venv .venv
-```
+**Trade-offs:** Higher quality for complex queries but increased latency and cost due to additional LLM calls.
 
-### 2. Activate Virtual Environment
+## Gradio Demo
 
-**On macOS/Linux:**
-
-```bash
-source .venv/bin/activate
-```
-
-**On Windows:**
-
-```bash
-.venv\Scripts\activate
-```
-
-### 3. Upgrade pip
-
-```bash
-python -m pip install -U pip
-```
-
-### 4. Install Jupyter Kernel Support
-
-```bash
-pip install ipykernel jupyter
-```
-
-### 5. Register Kernel with Jupyter (Optional but Recommended)
-
-Register your virtual environment as a named Jupyter kernel:
-
-```bash
-python -m ipykernel install --user --name=ai-programmers-python --display-name "Python (ai-programmers-python)"
-```
-
-This makes it easier to select the correct kernel in VS Code or Jupyter Notebook/Lab.
-
-### 6. Install Environment Variable Support (for .env files)
-
-```bash
-pip install python-dotenv
-```
-
-### 7. Create .env File
-
-Create a `.env` file in the project root with your API keys:
-
-```env
-# Required for all weeks
-OPENAI_API_KEY=your_openai_key_here
-
-# Week 2 - LangChain observability (optional)
-LANGCHAIN_API_KEY=your_langchain_key_here
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT=https://api.smith.langchain.com (if this url doesn't work check your organization url)
-LANGCHAIN_PROJECT=your_project_name
-
-# Week 2 - Vector database (Day 3 exercise)
-PINECONE_API_KEY=your_pinecone_key_here
-
-# Weeks 3-4 - Chroma vector database
-CHROMA_API_KEY=your_chroma_key_here
-CHROMA_TENANT=your_chroma_tenant_here
-CHROMA_DATABASE=your_chroma_database_here
-```
-
-### 8. Using the Environment
-
-- **In VS Code**:
-  - Open a notebook file
-  - Click the kernel selector in the top-right (or use Command Palette: "Select Kernel")
-  - Choose the Python interpreter from `.venv/bin/python` (VS Code auto-detects it)
-  - Or select "Python (ai-programmers-python)" if you completed step 5
-- **In Standalone Jupyter Notebook/Lab**:
-  - If you completed step 5: Select "Python (ai-programmers-python)" from the kernel dropdown
-  - If you skipped step 5: Activate the venv, then run `jupyter notebook` from within the activated environment
-- **Installing packages**: Each notebook installs its required packages via `%pip install` commands. You can also install them manually in the activated environment.
-
-## Setup Instructions
-
-### Required API Keys (Colab Secrets)
-
-Students must add these in Colab (key icon in left sidebar → Add new secret):
-
-**Required for all weeks:**
-
-- `OPENAI_API_KEY` - All weeks
-  - **Note**: Week 5 Day 1 (fine-tuning) requires billing-enabled account with fine-tuning access
-
-**Week 2:**
-
-- `LANGCHAIN_API_KEY` - Day 2 (for LangSmith observability, optional)
-- `LANGCHAIN_TRACING_V2` - Day 2 (set to "true" for LangSmith tracing, optional)
-- `LANGCHAIN_ENDPOINT` - Day 2 (LangSmith endpoint, optional)
-- `LANGCHAIN_PROJECT` - Day 2 (LangSmith project name, optional)
-- `PINECONE_API_KEY` - Day 3 (exercise notebook)
-
-**Weeks 3-4:**
-
-- `CHROMA_API_KEY` - All RAG notebooks
-- `CHROMA_TENANT` - All RAG notebooks
-- `CHROMA_DATABASE` - All RAG notebooks
-
-### Uploading Files to Colab
-
-If notebooks require additional files:
-
-1. Download from `assets/` folder (if present)
-2. In Colab: folder icon in left sidebar → Upload to session storage
-3. Note: Files are temporary (deleted when session ends)
-
-## Notebook Pattern
-
-Most days include:
-
-- Main notebook (concept instruction)
-- CFU notebook (check for understanding exercises)
-- Solution notebook (reference)
+Provides a web-based chat interface for interacting with the RAG system:
+- **Title**: "Crypto RAG Assistant (v5)"
+- **Features**: Conversation memory, multi-query retrieval, and FlashRank reranking
+- **Example Questions**: Includes sample queries about Bitcoin, blockchain technology, and cryptocurrency concepts
+- **Deployment**: Launches with public sharing enabled for easy access
