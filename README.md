@@ -16,9 +16,7 @@
 %pip install "langchain-chroma==0.2.6" -qqq
 %pip install pypdf -qqq
 %pip install gradio -qqq
-#--------------------------------------------------------------------------------
-# NEW IN v5 Build: Install FlashRank for reranking
-#--------------------------------------------------------------------------------
+
 %pip install flashrank -qqq
 
 # RAG - v5 Build
@@ -39,9 +37,7 @@
 %pip install "langchain-chroma==0.2.6" -qqq
 %pip install pypdf -qqq
 %pip install gradio -qqq
-#--------------------------------------------------------------------------------
-# NEW IN v5 Build: Install FlashRank for reranking
-#--------------------------------------------------------------------------------
+
 %pip install flashrank -qqq
 
 ## Configuration
