@@ -1,107 +1,65 @@
-# RAG - v5 Build
+# Home Workouts Chatbot
 
-**All features from v4 Build:**
-- Refactored code structure
-- Conversation Memory
-- Parent Document Retriever
+Home Workouts Chatbot is a retrieval-augmented generation (RAG) project that builds a personal fitness assistant from workout documents. It ingests PDF workout guides, stores them in a vector database, and serves a conversational chatbot that answers home exercise questions with context from the ingested materials.
 
-**NEW IN v5 Build:**
-- **Multi-Query Retrieval**: Generate query variations for better coverage
-- **FlashRank Reranking**: Cross-encoder reranking for better relevance
+## What this project does
 
-## Install Dependencies
-%pip install "langchain==0.3.27" -qqq
-%pip install "langchain-community==0.3.31" -qqq
-%pip install "langchain-openai==0.3.35" -qqq
-%pip install "langchain-chroma==0.2.6" -qqq
-%pip install pypdf -qqq
-%pip install gradio -qqq
+- Loads and preprocesses workout PDFs from the `files/` folder.
+- Detects the topic of each document to enrich metadata.
+- Splits text into retrievable chunks and stores them in Chroma.
+- Uses OpenAI embeddings and chat models to build a RAG-based workout assistant.
+- Supports follow-up questions and conversational context.
+- Includes a Gradio demo for an interactive trainer-style chat interface.
 
-%pip install flashrank -qqq
+## Key features
 
-# RAG - v5 Build
+- **Home workout focus**: Built around exercise guides and training manuals.
+- **Document ingestion pipeline**: Cleans, chunks, and indexes PDF content.
+- **Retrieval-enhanced answers**: Uses relevant text passages to answer questions accurately.
+- **Conversation memory**: Keeps recent chat history to handle follow-up queries.
+- **Trainer demo**: Provides a user interface for asking workout questions interactively.
 
-**All features from v4 Build:**
-- Refactored code structure
-- Conversation Memory
-- Parent Document Retriever
+## Setup
 
-**NEW IN v5 Build:**
-- **Multi-Query Retrieval**: Generate query variations for better coverage
-- **FlashRank Reranking**: Cross-encoder reranking for better relevance
+Install the required Python packages before running the notebook:
 
-## Install Dependencies
-%pip install "langchain==0.3.27" -qqq
-%pip install "langchain-community==0.3.31" -qqq
-%pip install "langchain-openai==0.3.35" -qqq
-%pip install "langchain-chroma==0.2.6" -qqq
-%pip install pypdf -qqq
-%pip install gradio -qqq
-
-%pip install flashrank -qqq
+```bash
+pip install "langchain==0.3.27"
+pip install "langchain-community==0.3.31"
+pip install "langchain-openai==0.3.35"
+pip install "langchain-chroma==0.2.6"
+pip install pypdf
+pip install gradio
+pip install flashrank
+```
 
 ## Configuration
 
-The project uses a `load_secrets` function to securely load API keys and configuration values. It first attempts to load from Google Colab's secret storage, and falls back to loading from a local `.env` file for development. Required secrets include Chroma database credentials and OpenAI API key.
+The notebook loads secrets using a helper function that reads environment variables or a `.env` file. Required secrets:
 
-## Global Variables
+- `CHROMA_API_KEY`
+- `CHROMA_TENANT`
+- `CHROMA_DATABASE`
+- `OPENAI_API_KEY`
 
-The system initializes several key components:
-- **Version Management**: Tracks the current build version (v5)
-- **Embeddings Model**: Uses OpenAI's text-embedding-3-small for document vectorization
-- **LLM**: Employs GPT-4o-mini for main inference and GPT-3.5-turbo for classification tasks
-- **Vector Database**: Connects to Chroma Cloud with the specified collection for document storage
-- **Base Retriever**: Configured to retrieve top 5 similar documents by default
+## How to use
 
-## Ingestion Pipeline
+1. Open `HomeWorkoutsChatbot.ipynb`.
+2. Run the dependency installation and configuration cells.
+3. Ingest the workout PDF files from `files/`.
+4. Create the RAG chain and launch the Gradio demo.
+5. Ask workout-related questions like:
+   - "How do I perform a goblet squat at home?"
+   - "What are the best stretching exercises after a leg workout?"
+   - "Give me a home-friendly upper body routine."
 
-The ingestion process handles PDF document processing with the following steps:
+## Files
 
-1. **Document Loading**: Loads PDF files from URLs or local paths using PyPDFLoader
-2. **Topic Detection**: Automatically identifies the document's primary topic (e.g., 'bitcoin', 'ethereum') using LLM analysis
-3. **Text Preprocessing**: Cleans raw PDF text by removing extra whitespace, standalone page numbers, and formatting artifacts
-4. **Document Chunking**: Splits documents into manageable chunks (1000 characters with 200 character overlap) for better retrieval
-5. **Metadata Enrichment**: Adds topic information and other metadata to each document chunk
-6. **Vector Storage**: Stores processed chunks in the Chroma vector database for later retrieval
+- `HomeWorkoutsChatbot.ipynb`: Main notebook containing the ingestion, retrieval, and Gradio demo flow.
+- `files/100-workouts-vol1.pdf`, `files/100-workouts-vol2.pdf`, `files/100-workouts-vol3.pdf`, `files/100-workouts-vol4.pdf`: Example workout documents used for ingestion.
 
-The system can ingest multiple documents, such as the Bitcoin whitepaper and Ethereum documentation.
+## Notes
 
-## Inference Process
-
-The inference pipeline implements advanced retrieval-augmented generation with conversation memory:
-
-### RAG Chain
-Creates a conversational AI assistant specialized in cryptocurrency whitepapers. The chain:
-- Maintains conversation context across turns
-- Provides clear, concise answers (2-3 paragraphs max)
-- Uses only provided document context
-- Handles follow-up questions by referencing previous context
-
-### Chat History Formatting
-Processes conversation history to maintain context while managing token limits:
-- Limits to recent 5 conversation turns
-- Formats messages for LLM consumption
-- Balances relevance with cost/performance constraints
-
-### Multi-Query Retrieval + Reranking (NEW IN v5)
-Implements state-of-the-art retrieval techniques:
-
-**Multi-Query Approach:**
-- Generates multiple query variations using LLM
-- Searches vector database with each variation
-- Combines and deduplicates results for broader coverage
-
-**FlashRank Reranking:**
-- Uses cross-encoder model to score document relevance
-- Reranks retrieved documents by semantic similarity to original query
-- Returns top 4 most relevant documents
-
-**Trade-offs:** Higher quality for complex queries but increased latency and cost due to additional LLM calls.
-
-## Gradio Demo
-
-Provides a web-based chat interface for interacting with the RAG system:
-- **Title**: "Crypto RAG Assistant (v5)"
-- **Features**: Conversation memory, multi-query retrieval, and FlashRank reranking
-- **Example Questions**: Includes sample queries about Bitcoin, blockchain technology, and cryptocurrency concepts
-- **Deployment**: Launches with public sharing enabled for easy access
+- The assistant is designed to answer questions using only the ingested workout documents.
+- If a question cannot be answered from the available content, it should indicate that the information is not available.
+- The project is ideal for prototyping a fitness-focused chatbot using RAG techniques.
