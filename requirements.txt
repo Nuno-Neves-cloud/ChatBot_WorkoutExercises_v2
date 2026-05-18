@@ -1,0 +1,13 @@
+langchain==0.3.27
+langchain-community==0.3.31
+langchain-openai==0.3.35
+langchain-chroma==0.2.6
+langchain-core
+langchain_community
+langchain_chroma
+openai
+cryptography
+pypdf
+gradio
+flashrank
+python-dotenv
