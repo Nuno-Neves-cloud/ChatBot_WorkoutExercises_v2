@@ -6,6 +6,22 @@ Run with: python main.py --serve
 from typing import Dict, List
 import os
 import argparse
+import warnings
+
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL 1.1.1+")
+
+
+def format_inference_error(error: Exception) -> str:
+    error_message = str(error).lower()
+    if "quota" in error_message or "rate limit" in error_message or "429" in error_message:
+        return (
+            "I’m sorry, the AI service is currently unavailable because the OpenAI quota or rate limit has been exceeded. "
+            "Please try again shortly or check your API quota."
+        )
+    return (
+        "I'm sorry, I couldn't complete that request right now. "
+        "Please try again in a moment."
+    )
 
 def load_secrets(keys: List[str]) -> Dict[str, str]:
     """Load secret values quickly with minimal imports."""
@@ -15,7 +31,8 @@ def load_secrets(keys: List[str]) -> Dict[str, str]:
     if all(env_values.get(k) for k in keys):
         return env_values
 
-    env_path = os.path.join(os.getcwd(), ".env")
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(project_root, ".env")
     values = env_values.copy()
 
     # Only attempt to load .env if a .env file exists and some keys are missing
@@ -122,7 +139,7 @@ def build_app(serve: bool = True):
 
         return detected_topic
 
-    from langchain.document_loaders import PyPDFLoader
+    from langchain_community.document_loaders import PyPDFLoader
 
     def ingest_documents(document_path: str):
         print("-" * 80)
@@ -207,19 +224,23 @@ def build_app(serve: bool = True):
 
         formatted_history = format_chat_history(chat_history, max_turns=5)
 
-        multiquery_retriever = MultiQueryRetriever.from_llm(retriever=base_retriever, llm=llm)
-        compressor = FlashrankRerank(top_n=4)
-        compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=multiquery_retriever)
+        try:
+            multiquery_retriever = MultiQueryRetriever.from_llm(retriever=base_retriever, llm=llm)
+            compressor = FlashrankRerank(top_n=4)
+            compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=multiquery_retriever)
 
-        results = compression_retriever.invoke(query)
+            results = compression_retriever.invoke(query)
 
-        context = "\n\n".join([doc.page_content for doc in results])
+            context = "\n\n".join([doc.page_content for doc in results])
 
-        response = create_rag_chain().invoke({"context": context, "query": query, "history": formatted_history})
-        print("\n" + "=" * 80)
-        print("INFERENCE COMPLETE")
-        print("=" * 80)
-        return response
+            response = create_rag_chain().invoke({"context": context, "query": query, "history": formatted_history})
+            print("\n" + "=" * 80)
+            print("INFERENCE COMPLETE")
+            print("=" * 80)
+            return response
+        except Exception as exc:
+            print(f"INFERENCE ERROR: {exc}")
+            return format_inference_error(exc)
 
     # Gradio interface
     def chat_inference(message, history):
@@ -257,7 +278,8 @@ def main():
     parser.add_argument("--ingest", action="store_true", help="Run ingestion on bundled files")
     args = parser.parse_args()
 
-    app = build_app(serve=args.serve)
+    serve_app = args.serve or (not args.serve and not args.ingest)
+    app = build_app(serve=serve_app)
 
     if args.ingest:
         # Default ingest files in ./files if present

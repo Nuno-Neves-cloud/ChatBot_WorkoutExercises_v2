@@ -8,6 +8,7 @@ langchain_chroma
 openai
 cryptography
 pypdf
+huggingface-hub<1.0
 gradio
 flashrank
 python-dotenv
