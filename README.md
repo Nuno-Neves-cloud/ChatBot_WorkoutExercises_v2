@@ -46,7 +46,7 @@ The notebook loads secrets using a helper function that reads environment variab
 
 1. Open `HomeWorkoutsChatbot.ipynb`.
 2. Run the dependency installation and configuration cells.
-3. Ingest the workout PDF files from `files/`.
+3. Download example workout PDFs using the link in [`files/README.md`](files/README.md), then ingest the PDFs from `files/`.
 4. Create the RAG chain and launch the Gradio demo.
 5. Ask workout-related questions like:
    - "How do I perform a goblet squat at home?"
@@ -56,7 +56,7 @@ The notebook loads secrets using a helper function that reads environment variab
 ## Files
 
 - `HomeWorkoutsChatbot.ipynb`: Main notebook containing the ingestion, retrieval, and Gradio demo flow.
-- `files/100-workouts-vol1.pdf`, `files/100-workouts-vol2.pdf`, `files/100-workouts-vol3.pdf`, `files/100-workouts-vol4.pdf`: Example workout documents used for ingestion.
+- `files/README.md`: Link to example workout PDFs and instructions for adding them locally.
 
 ## Notes
 
